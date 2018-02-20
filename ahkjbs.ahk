@@ -314,8 +314,12 @@ IfWinExist, Run
 }
 If (AtrexSafeWin() == True)
 {
-	AtrexFreeUser()
-	ShowDueToday()
+	IfWinNotExist, Open Service Order Selection
+	{
+		;Function will not clear away windows if user already has an Open Service Order Selection window open. This is to allow the user to have a custom list of service orders to update
+		AtrexFreeUser()
+		ShowDueToday()
+	}
 	IfExist, soNumList.exe
 	{
 		Run soNumList.exe
@@ -2817,10 +2821,12 @@ DueDateTextFile(filepath) ;DueDateTextFile function. Comment is here for ctrl+f
 	Global futuredate
 	Global ddtimestamp := False
 	Global user
-	ddfailed := "- SO failed to open"
-	ddinvalid := "- Invalid SO number"
+	ddfailed := "Due date could not be updated for S"
+	ddnoopen := " - SO failed to open"
+	ddinvalid := " - Invalid SO number"
 	ddunexpectedopen := " - Unexpected open service order"
-	ddfatalerr := "All service orders after S"
+	ddfatalerr := "Function encountered an unrecoverable error and couldn't continue. Please try again.`rLast successful update was S"
+	lastsuccessful := ""
 	failedso := False
 	startupdating := False
 	futuredate := GetFutureDate()
@@ -2879,7 +2885,7 @@ DueDateTextFile(filepath) ;DueDateTextFile function. Comment is here for ctrl+f
 				If (StrLen(sonum) != 5)
 				{
 					;This if statement will have to be changed in the future when SO numbers go above 6 digits in length
-					sonum = %sonum%%ddinvalid%
+					sonum = %ddfailed%%sonum%%ddinvalid%
 					miscarray.Insert(sonum)
 					failedso := True
 				}
@@ -2887,8 +2893,9 @@ DueDateTextFile(filepath) ;DueDateTextFile function. Comment is here for ctrl+f
 				{
 					;If a Service Order Creation/Editing window is already open before the function starts updating a due date that means something went wrong in Atrex and the function is forced to abort
 					MsgBox, Something went wrong!`r-----`rA service order is unexpectedly open.`rThe function has to cancel. Please try again.
-					sonum := %ddfatalerr%%sonum%%ddunexpectedopen%
+					sonum := %ddfatalerr%%lastsuccessful%%ddunexpectedopen%
 					miscarray.Insert(sonum)
+					failedso := True
 					Break
 				}
 				Else
@@ -2896,7 +2903,7 @@ DueDateTextFile(filepath) ;DueDateTextFile function. Comment is here for ctrl+f
 					If (DueDateUpdate(sonum, futuredate, ddtimestamp) == False)
 					{
 						;DueDateUpdate function will run and if it returns false the SO number that failed is recorded
-						sonum = %sonum%%ddfailed%
+						sonum = %ddfailed%%sonum%%ddnoopen%
 						miscarray.Insert(sonum)
 						failedso := True
 						Sleep 1000
@@ -2910,6 +2917,10 @@ DueDateTextFile(filepath) ;DueDateTextFile function. Comment is here for ctrl+f
 							AtrexBack()
 						}
 					}
+					Else
+					{
+						lastsuccessful = %sonum%
+					}
 				}
 			}
 			MsgBox, Due date updates finished
@@ -2917,7 +2928,7 @@ DueDateTextFile(filepath) ;DueDateTextFile function. Comment is here for ctrl+f
 			{
 				;Any service orders that couldn't be updated are displayed when the function finishes
 				sonumfailed := ArrayCollator(miscarray, "●")
-				MsgBox, Service orders that failed to be updated:`r%sonumfailed%
+				MsgBox, The function ran into problems updating due dates`r%sonumfailed%
 			}
 			MsgBox, 4,, Viltu uppfæra biðtíma? (velja Yes eða No)
 			IfMsgBox, Yes

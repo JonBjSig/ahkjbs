@@ -239,44 +239,7 @@ Return
 
 ^!,::
 ;Shows all the user's service orders that have the due date set to today
-IfWinExist, Atrex
-{
-	AtrexFreeUser()
-	WinActivate, Atrex
-	SendInput {LShift down}{LAlt down}{F8}{LAlt up}{LShift up}
-	If (WaitForWindow("Open Service Order Selection") == True)
-	{
-		FormatTime, Date,, d.M.yyyy
-		Sleep 250
-		MouseClick, left, MouseClickPosX + MouseOffsetDuedateDetail, MouseClickPosY
-		Sleep 250
-		SendInput %Date%{Space}
-		Sleep 250
-		SendInput {Esc}
-		Sleep 250
-		MouseClick, left, MouseClickPosX + MouseOffsetStatusDetail, MouseClickPosY
-		Sleep 250
-		SendInput {down}{Enter}
-		If (WaitForWindow("Custom Filter") == True)
-		{
-			WinActivate, Custom Filter
-			SendInput does not contain{Tab}Hringja{Enter}
-		}
-		Sleep 250
-		MouseClick, left, MouseClickPosX, MouseClickPosY
-		Sleep 250
-		SendInput, %user%{Space}{Esc}
-		; IfWinNotExist, Snipping Tool
-		; {
-		; 	Run snippingtool.exe
-		; }
-		; If (WaitForWindow("Snipping Tool") == True)
-		; {
-		; 	WinActivate, Snipping Tool
-		; 	SendInput, {LAlt down}mw{LAlt up}
-		; }
-	}
-}
+ShowDueToday()
 Return
 
 ;v Colon functions v
@@ -351,6 +314,8 @@ IfWinExist, Run
 }
 If (AtrexSafeWin() == True)
 {
+	AtrexFreeUser()
+	ShowDueToday()
 	IfExist, soNumList.exe
 	{
 		Run soNumList.exe
@@ -2992,6 +2957,53 @@ GetFutureDate(adddays := 0){
 	EnvAdd, todaydate, %adddays%, days ;Adding the set number of days to the todaydate variable
 	FormatTime, futuredate, %todaydate%, dd.MM.yyyy ;Setting a new variable with the future date
 	Return futuredate
+}
+ShowDueToday(){
+	;Shows service orders the current user has that have a due date today and the status isn't set to Hringja
+	Global MouseClickPosX
+	Global MouseClickPosY
+	Global MouseOffsetDuedateDetail
+	Global MouseOffsetStatusDetail
+	Global user
+	Global Date
+	IfWinExist, Atrex
+	{
+		AtrexFreeUser()
+		WinActivate, Atrex
+		SendInput {LShift down}{LAlt down}{F8}{LAlt up}{LShift up}
+		If (WaitForWindow("Open Service Order Selection") == True)
+		{
+			FormatTime, Date,, d.M.yyyy
+			Sleep 250
+			MouseClick, left, MouseClickPosX + MouseOffsetDuedateDetail, MouseClickPosY
+			Sleep 250
+			SendInput %Date%{Space}
+			Sleep 250
+			SendInput {Esc}
+			Sleep 250
+			MouseClick, left, MouseClickPosX + MouseOffsetStatusDetail, MouseClickPosY
+			Sleep 250
+			SendInput {down}{Enter}
+			If (WaitForWindow("Custom Filter") == True)
+			{
+				WinActivate, Custom Filter
+				SendInput does not contain{Tab}Hringja{Enter}
+			}
+			Sleep 250
+			MouseClick, left, MouseClickPosX, MouseClickPosY
+			Sleep 250
+			SendInput, %user%{Space}{Esc}
+			; IfWinNotExist, Snipping Tool
+			; {
+			; 	Run snippingtool.exe
+			; }
+			; If (WaitForWindow("Snipping Tool") == True)
+			; {
+			; 	WinActivate, Snipping Tool
+			; 	SendInput, {LAlt down}mw{LAlt up}
+			; }
+		}
+	}
 }
 StatusUpdate(sostatus){
 	;Function that sets the current status of a service order

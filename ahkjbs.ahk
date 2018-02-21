@@ -1464,11 +1464,14 @@ ViewUserSO(){
 			WinActivate, Open Service Order Selection
 			MouseClick, left, MouseClickPosX, MouseClickPosY
 			Sleep 100
-			SendInput %user%{Space}
-			Sleep 100
-			MouseClick, left, MouseClickPosX + MouseOffsetStatusSort, MouseClickPosY
-			Sleep 100
-			SendInput {End}
+			SendInput {down}{Space}
+			If (WaitForWindow("Custom Filter") == True)
+			{
+				SendInput contains{Tab}%user%{Enter}
+				MouseClick, left, MouseClickPosX + MouseOffsetStatusSort, MouseClickPosY
+				Sleep 100
+				SendInput {End}
+			}
 		}
 		SendLevel, 1
 	}
@@ -2999,20 +3002,15 @@ ShowDueToday(){
 			{
 				WinActivate, Custom Filter
 				SendInput does not contain{Tab}Hringja{Enter}
+				Sleep 250
+				MouseClick, left, MouseClickPosX, MouseClickPosY
+				Sleep 250
+				SendInput, {down}{Space}
+				If (WaitForWindow("Custom Filter") == True)
+				{
+					SendInput contains{Tab}%user%{Enter}
+				}
 			}
-			Sleep 250
-			MouseClick, left, MouseClickPosX, MouseClickPosY
-			Sleep 250
-			SendInput, %user%{Space}{Esc}
-			; IfWinNotExist, Snipping Tool
-			; {
-			; 	Run snippingtool.exe
-			; }
-			; If (WaitForWindow("Snipping Tool") == True)
-			; {
-			; 	WinActivate, Snipping Tool
-			; 	SendInput, {LAlt down}mw{LAlt up}
-			; }
 		}
 	}
 }

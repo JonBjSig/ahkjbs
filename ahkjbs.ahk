@@ -68,21 +68,24 @@ Return
 AtrexBack()
 Return
 
-;Calibrate mouse click position for SO list automation
 ^!z::
+;Shows cursor's current position on the screen. Allows the user to either recalibrate mouse clicks to that position or save the position to clipboard
 CalibrateMouseClick(MouseClickPosX, MouseClickPosY)
 Return
 
-;Moves the cursor to current set mouse position
 ^!x::
+;Moves the cursor to current set mouse position
 MouseMove, MouseClickPosX, MouseClickPosY
 Return
 
-;Displays message telling the cursor's current position. Also copies current position to clipboard
 ^!c::
-MouseGetPos, currentposx, currentposy
-MsgBox, Current mouse position is X%currentposx%,Y%currentposy%
-clipboard = %currentposx%, %currentposy%
+;Sets focus to Logitech Options and then minimizes the window. This is to fix an issue with active window detection in the Logitech Options program
+IfWinExist, Logitech Options
+{
+	WinGet, activewindow,, A
+	WinActivate, Logitech Options
+	WinMinimize, Logitech Options
+}
 Return
 
 ^!p::
@@ -2036,11 +2039,20 @@ CustServiceHistory(){
 	}
 }
 CalibrateMouseClick(byref MouseClickPosX, byref MouseClickPosY){
-	;Calibrates mouse position for SO list sorting to current mouse position
+	;Shows cursor's current position on the screen. Allows the user to either recalibrate mouse clicks to that position or save the position to clipboard
 	MouseGetPos, xpos, ypos
-	MouseClickPosX := xpos
-	MouseClickPosY := ypos
-	Msgbox, MouseClickPos calibrated to X%xpos%,Y%ypos%.
+	MsgBox, 4,, Mouse position is X%xpos%,Y%ypos%.`rDo you want to calibrate to this position?
+	IfMsgBox, Yes
+	{
+		MouseClickPosX := xpos
+		MouseClickPosY := ypos
+		MsgBox, Mouse click recalibrated to X%xpos%,Y%ypos%.
+	}
+	Else
+	{
+		clipboard = %xpos%,%ypos%
+		MsgBox, Mouse click not recalibrated.`rPosition saved to clipboard.
+	}
 }
 SetUser(byref user){
 	InputBox, user,, Enter User
